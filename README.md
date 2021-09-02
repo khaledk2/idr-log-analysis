@@ -35,7 +35,7 @@ If you need to create the index patterns yourself:
 2. Untar  the `nginx` archive copied to `/uod/idr/versions/prodNN` under this directory
 3. Delete  all `error.log*` as well as all `access.log*` files that are not in the required timerange, i.e. those from pre-release or post-release work.
 4. For convenience if you have any files that do not follow the `access.log-YYYYMMDD.gz` rename and gzip them.
-5. Aggregate all these logs into a single uncompressed file, `zcat access.log-*.gz > access.log-prodNN`.
+5. Aggregate all these logs into a single uncompressed file, `zcat access.log*.gz > access.log-prodNN`.
 6. Move `access.log-prodNN` to `/uod/idr/versions/nginx-logs-combined/prod-merged-agg/`
 7. Fluentd should automatically start to process this file
 
