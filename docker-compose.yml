@@ -48,6 +48,8 @@ services:
     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     # Nginx basic auth
     - ./nginx/httppasswd:/etc/nginx/httppasswd:ro
+    # logs files
+    - ./volumes/nginx/log/:/var/log/nginx/
 
 networks:
   efk-idranalysis:
