@@ -2,7 +2,7 @@
   "settings" : {
     "number_of_shards" : 1
   },
-    "fluentd": {
+  "mappings": {
       "properties" : {
         "host": {
           "type": "ip"
