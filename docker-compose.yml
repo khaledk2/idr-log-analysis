@@ -1,4 +1,4 @@
-version: "4"
+version: "3"
 
 services:
   elasticsearch:
@@ -27,7 +27,7 @@ services:
     - "elasticsearch"
     volumes:
     - ./fluentd/conf:/fluentd/etc
-    - /uod/idr/versions/idr-analysis-logs-cmbined/:/idranalysis-haproxy-logs/:ro
+    - /uod/idr/versions/idr-analysis-logs-combined/:/idranalysis-haproxy-logs/:ro
     - /uod/idr/versions/nginx-logs-combined/prod-merged-agg/:/idr-nginx-logs:ro
     - ./volumes/fluentd/:/fluentd/pos/
 
