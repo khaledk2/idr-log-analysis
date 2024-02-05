@@ -3,7 +3,6 @@
     "number_of_shards" : 1
   },
   "mappings": {
-    "fluentd": {
       "properties" : {
         "host": {
           "type": "ip"
@@ -12,7 +11,6 @@
           "type": "geo_point"
         }
       }
-    }
   },
   "index_patterns": ["fluentd.nginx.access-*", "fluentd.haproxy.http-*"]
 }

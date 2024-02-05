@@ -1,12 +1,16 @@
 version: "3"
 
 services:
-
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
     environment:
-      discovery.type: single-node
-      ES_JAVA_OPTS: "-Xmx4096m"
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xmx4096m"
+      - "cluster.max_shards_per_node=6000"
+      - "xpack.security.http.ssl.enabled=false"
+      - "xpack.security.enabled=false"
+      - "xpack.security.transport.ssl.enabled=false"
+      - "xpack.security.enrollment.enabled=false"
     networks:
     - efk-idranalysis
     volumes:
@@ -14,27 +18,29 @@ services:
     - ./volumes/es:/usr/share/elasticsearch/data
 
   fluentd:
-    build: ./fluentd
+    build:
+      context: ./fluentd
+      network: host
     networks:
     - efk-idranalysis
+    links:
+    - "elasticsearch"
     volumes:
-    # Fluentd configuration
-    - ./fluentd/:/fluentd/etc/:ro
-    # Fluentd file position record
-    - ./volumes/fluentd/:/fluentd/pos/
-    # Aggregated Haproxy HTTP logs
+    - ./fluentd/conf:/fluentd/etc
     - /uod/idr/versions/idr-analysis-logs-combined/:/idranalysis-haproxy-logs/:ro
     - /uod/idr/versions/nginx-logs-combined/prod-merged-agg/:/idr-nginx-logs:ro
-    #- ./logs-haproxy/:/idranalysis-haproxy-logs/:ro
-    #- ./logs-nginx/:/idr-nginx-logs:ro
+    - ./volumes/fluentd/:/fluentd/pos/
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:6.6.0
+    image:  docker.elastic.co/kibana/kibana:8.8.1
     networks:
-    - efk-idranalysis
+     efk-idranalysis:
+       ipv4_address: "10.11.0.10"
 
   nginx:
-    image: library/nginx:1.15.8
+    image: library/nginx:1.24.0
+    links:
+    - "elasticsearch"
     networks:
     - efk-idranalysis
     ports:
@@ -43,9 +49,13 @@ services:
     # Nginx configuration
     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     # Nginx basic auth
-    - ./nginx/passwd:/etc/nginx/passwd:ro
+    - ./nginx/httppasswd:/etc/nginx/httppasswd:ro
+    # logs files
+    - ./volumes/nginx/log/:/var/log/nginx/
 
 networks:
   efk-idranalysis:
-
-#volumes:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.11.0.0/16
