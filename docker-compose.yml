@@ -3,6 +3,10 @@ version: "3"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    logging:
+      options:
+        max-size: 60m 
+        max-file: 4
     environment:
       - "discovery.type=single-node"
       - "ES_JAVA_OPTS=-Xmx4096m"
@@ -11,16 +15,24 @@ services:
       - "xpack.security.enabled=false"
       - "xpack.security.transport.ssl.enabled=false"
       - "xpack.security.enrollment.enabled=false"
+      - "path.repo=/usr/share/backup" 
+    restart: unless-stopped
     networks:
-    - efk-idranalysis
+    - efk-idranalysis 
     volumes:
     # Elasticsearch database
     - ./volumes/es:/usr/share/elasticsearch/data
+    - ./volumes/es_backup:/usr/share/backup
 
   fluentd:
     build:
       context: ./fluentd
       network: host
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 60m 
+        max-file: 4
     networks:
     - efk-idranalysis
     links:
@@ -30,15 +42,21 @@ services:
     - /uod/idr/versions/idr-analysis-logs-combined/:/idranalysis-haproxy-logs/:ro
     - /uod/idr/versions/nginx-logs-combined/prod-merged-agg/:/idr-nginx-logs:ro
     - ./volumes/fluentd/:/fluentd/pos/
+    # - ./fluentd/conf:/fluentd/etc
+    # - /scratch/folder1/:/idranalysis-haproxy-logs/:ro
+    # - /scratch/folder2/:/idr-nginx-logs:ro
+    #- ./volumes/fluentd/:/fluentd/pos/
 
   kibana:
     image:  docker.elastic.co/kibana/kibana:8.8.1
+    restart: unless-stopped
     networks:
      efk-idranalysis:
        ipv4_address: "10.11.0.10"
 
   nginx:
     image: library/nginx:1.24.0
+    restart: unless-stopped
     links:
     - "elasticsearch"
     networks:
